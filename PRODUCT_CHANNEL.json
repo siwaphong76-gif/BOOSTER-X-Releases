@@ -1,0 +1,13 @@
+{
+  "version": "1.1.0",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.1.0/BOOSTER_X_V1.1.zip",
+  "sha256": "38cd9410421acff6b1d5db60d1dbc8eaf9078415f4b1ac0cb2a46c96e19a354b",
+  "releaseNotes": [
+    "Reduced CPU and RAM usage",
+    "Added PowerShell-only launch protection",
+    "Added automatic update and restart",
+    "Improved telemetry stability",
+    "Improved WebView2 performance"
+  ],
+  "mandatory": false
+}
