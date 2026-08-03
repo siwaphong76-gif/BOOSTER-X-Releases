@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
     ตัวติดตั้ง BOOSTER X แบบคำสั่งเดียวผ่าน PowerShell
