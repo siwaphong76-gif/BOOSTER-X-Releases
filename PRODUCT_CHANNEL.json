@@ -2,8 +2,8 @@
     "version":  "1.5.1",
     "displayVersion":  "Booster X V1.5.1",
     "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.1/BOOSTER_X_V1.5.1_Portable.zip",
-    "sha256":  "eb9523a506000e0fa3ea989c93fa77894db11e8bb55c02865294fe9cdc548368",
-    "size":  134824306,
+    "sha256":  "0ba1290d61e57da0536789ea4c8cbf8fcdbc30427b5066941932592e9e4cda56",
+    "size":  134824157,
     "requirePackageIntegrity":  true,
     "releaseNotes":  "ปรับ Layout ของ Custom Power Profile ให้พอดีทุกความกว้างและ Display Scale, แก้ช่อง CPU/Boost/Unpark/PCIe/USB ไม่ให้ล้นหรือซ้อนกัน และเก็บรายละเอียด UI ของ Game Session.",
     "mandatory":  false
