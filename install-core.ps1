@@ -25,6 +25,7 @@ $ProductName = 'BOOSTER X'
 $InstallRoot = Join-Path $env:LOCALAPPDATA 'Programs\BOOSTER X'
 $DataRoot = Join-Path $env:LOCALAPPDATA 'BOOSTER X'
 $LogRoot = Join-Path $DataRoot 'Logs'
+$LaunchFailureLog = Join-Path $LogRoot 'last-launch-error.log'
 $StartMenuRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\BOOSTER X'
 $DesktopShortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) 'BOOSTER X.lnk'
 $StartMenuShortcut = Join-Path $StartMenuRoot 'BOOSTER X.lnk'
@@ -370,6 +371,88 @@ function Get-InstalledVersion {
     try { return [string](Get-ItemPropertyValue -Path $UninstallKey -Name DisplayVersion -ErrorAction Stop) } catch { return '' }
 }
 
+function Test-InstalledPackageHealthy {
+    foreach ($required in @('BOOSTER X.exe','BOOSTER X Updater.exe','Launch-BOOSTER-X.ps1','PACKAGE_INTEGRITY.json')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $InstallRoot $required))) {
+            Write-Status ("ต้องซ่อมแซม: ไม่พบ " + $required) Yellow
+            return $false
+        }
+    }
+    try {
+        Test-PackageIntegrity $InstallRoot
+        return $true
+    }
+    catch {
+        Write-Status ("ต้องซ่อมแซม: " + $_.Exception.Message) Yellow
+        return $false
+    }
+}
+
+function Test-BoosterProcessRunning {
+    $installPrefix = [IO.Path]::GetFullPath($InstallRoot).TrimEnd('\') + '\'
+    try {
+        $match = Get-CimInstance Win32_Process -Filter "Name='BOOSTER X.exe'" -ErrorAction Stop | Where-Object {
+            $_.ExecutablePath -and ([IO.Path]::GetFullPath($_.ExecutablePath)).StartsWith($installPrefix, [StringComparison]::OrdinalIgnoreCase)
+        } | Select-Object -First 1
+        if ($null -ne $match) { return $true }
+    }
+    catch { }
+    return (@(Get-Process -Name 'BOOSTER X' -ErrorAction SilentlyContinue).Count -gt 0)
+}
+
+function Write-LaunchFailure {
+    param([string]$Message)
+    $lines = @(
+        'BOOSTER X LAUNCH FAILURE',
+        ('Time: ' + (Get-Date).ToString('O')),
+        ('InstallRoot: ' + $InstallRoot),
+        ('Message: ' + $Message),
+        ('RecoveryLog: ' + (Join-Path $DataRoot 'recovery.log')),
+        ('WebViewLog: ' + (Join-Path $DataRoot 'webview-init-error.log'))
+    )
+    [IO.File]::WriteAllLines($LaunchFailureLog, $lines, (New-Object Text.UTF8Encoding($true)))
+}
+
+function Start-BoosterAndVerify {
+    $launcher = Join-Path $InstallRoot 'Launch-BOOSTER-X.ps1'
+    if (-not (Test-Path -LiteralPath $launcher)) { Fail 'BX-LAUNCH-001' 'ไม่พบ Launcher หลังติดตั้ง ระบบจะซ่อมแซมในการเรียกครั้งถัดไป' }
+
+    if (Test-BoosterProcessRunning) {
+        Write-Status 'BOOSTER X ทำงานอยู่แล้ว กำลังเรียกหน้าต่างกลับมา...' Cyan
+    }
+    else {
+        Write-Status 'กำลังเปิด BOOSTER X...' Cyan
+    }
+
+    $powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "' + $launcher + '"'
+    try {
+        $launcherProcess = Start-Process -FilePath $powerShell -ArgumentList $arguments -WorkingDirectory $InstallRoot -Wait -PassThru
+    }
+    catch {
+        Write-LaunchFailure $_.Exception.Message
+        Fail 'BX-LAUNCH-002' ("Launcher เริ่มทำงานไม่สำเร็จ: " + $_.Exception.Message + "`nLog: " + $LaunchFailureLog)
+    }
+    if ($launcherProcess.ExitCode -ne 0) {
+        $message = 'Launcher ส่งรหัสผิดพลาด ' + $launcherProcess.ExitCode
+        Write-LaunchFailure $message
+        Fail 'BX-LAUNCH-003' ($message + "`nLog: " + $LaunchFailureLog)
+    }
+
+    for ($attempt = 1; $attempt -le 12; $attempt++) {
+        Start-Sleep -Seconds 1
+        if (Test-BoosterProcessRunning) {
+            Remove-Item -LiteralPath $LaunchFailureLog -Force -ErrorAction SilentlyContinue
+            Write-Status 'เปิด BOOSTER X สำเร็จ' Green
+            return
+        }
+    }
+
+    $message = 'โปรแกรมเริ่มทำงานแล้วปิดตัวก่อนแสดงหน้าต่าง กรุณาดู Recovery/WebView log ที่ระบุไว้'
+    Write-LaunchFailure $message
+    Fail 'BX-LAUNCH-004' ($message + "`nLog: " + $LaunchFailureLog)
+}
+
 try {
     if (-not (Test-IsWindows)) { Fail 'BX-INS-001' 'ตัวติดตั้งรองรับ Windows เท่านั้น' }
     if ([Environment]::Is64BitOperatingSystem -eq $false) { Fail 'BX-INS-002' 'BOOSTER X รองรับ Windows 64-bit เท่านั้น' }
@@ -400,11 +483,19 @@ try {
     Write-Status ("เวอร์ชันที่จะติดตั้ง: " + $manifest.Version) White
     if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status ("เวอร์ชันที่ติดตั้งอยู่: " + $installedVersion) Yellow }
 
-    if (-not $Force -and -not $Silent) {
-        Write-Host
-        Write-Host 'ระบบจะดาวน์โหลด ตรวจสอบไฟล์ ติดตั้ง สร้าง Shortcut และเก็บข้อมูลเดิมไว้' -ForegroundColor Gray
-        $answer = Read-Host 'ดำเนินการต่อหรือไม่? พิมพ์ Y เพื่อยืนยัน'
-        if ($answer -notmatch '^(Y|YES|ย)$') { Write-Status 'ยกเลิกการติดตั้ง' Yellow; exit 0 }
+    $sameVersion = -not [string]::IsNullOrWhiteSpace($installedVersion) -and $installedVersion.Trim() -eq $manifest.Version
+    if (-not $Force -and $sameVersion -and (Test-InstalledPackageHealthy)) {
+        Write-Status 'โปรแกรมเป็นเวอร์ชันล่าสุดและไฟล์ครบ ไม่ต้องดาวน์โหลดใหม่' Green
+        Write-Status ('ตำแหน่ง: ' + $InstallRoot) DarkGray
+        if (-not $NoLaunch) { Start-BoosterAndVerify }
+        return
+    }
+
+    if (Test-Path -LiteralPath $InstallRoot) {
+        Write-Status 'พบโปรแกรมเดิมที่ต้องอัปเดตหรือซ่อมแซม ระบบจะดำเนินการอัตโนมัติ' Yellow
+    }
+    else {
+        Write-Status 'ยังไม่พบโปรแกรม ระบบจะติดตั้งให้อัตโนมัติ' Cyan
     }
 
     New-Item -ItemType Directory -Force -Path $WorkRoot | Out-Null
@@ -451,20 +542,27 @@ try {
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
-    if ($BackupCreated) { Remove-Item -LiteralPath $BackupRoot -Recurse -Force -ErrorAction SilentlyContinue }
-    Write-Status 'ติดตั้ง BOOSTER X สำเร็จ' Green
+    Write-Status 'ติดตั้งและตรวจสอบไฟล์ BOOSTER X สำเร็จ' Green
     Write-Status ('เวอร์ชัน: ' + $manifest.Version) White
     Write-Status ('ตำแหน่ง: ' + $InstallRoot) DarkGray
     Write-Status ('บันทึกการติดตั้ง: ' + $LogPath) DarkGray
 
     if (-not $NoLaunch) {
-        Write-Status 'กำลังเปิด BOOSTER X...' Cyan
-        & (Join-Path $InstallRoot 'Launch-BOOSTER-X.ps1') -Silent
+        $preserveInstalledFiles = -not $BackupCreated
+        try { Start-BoosterAndVerify }
+        catch {
+            if ($preserveInstalledFiles) { $InstallCommitted = $false }
+            throw
+        }
     }
+    if ($BackupCreated) { Remove-Item -LiteralPath $BackupRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    $BackupCreated = $false
+    $InstallCommitted = $false
+    Write-Status 'BOOSTER X พร้อมใช้งาน' Green
 }
 catch {
     $message = $_.Exception.Message
-    try { Write-Status ('ติดตั้งไม่สำเร็จ: ' + $message) Red } catch { Write-Host ('ติดตั้งไม่สำเร็จ: ' + $message) -ForegroundColor Red }
+    try { Write-Status ('ติดตั้ง/เปิดโปรแกรมไม่สำเร็จ: ' + $message) Red } catch { Write-Host ('ติดตั้ง/เปิดโปรแกรมไม่สำเร็จ: ' + $message) -ForegroundColor Red }
     try {
         if ($InstallCommitted -and (Test-Path -LiteralPath $InstallRoot)) { Remove-Item -LiteralPath $InstallRoot -Recurse -Force -ErrorAction SilentlyContinue }
         if ($BackupCreated -and (Test-Path -LiteralPath $BackupRoot)) {
