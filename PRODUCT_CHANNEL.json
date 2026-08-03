@@ -1,10 +1,10 @@
 {
-    "version":  "1.5.0",
-    "displayVersion":  "Booster X V1.5",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.0/BOOSTER_X_V1.5_Portable.zip",
-    "sha256":  "11f707e6816cdd251798db93691cb4f03b0f246a27243d176be245c5e20fc93c",
-    "size":  134823825,
+    "version":  "1.5.1",
+    "displayVersion":  "Booster X V1.5.1",
+    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.1/BOOSTER_X_V1.5.1_Portable.zip",
+    "sha256":  "eb9523a506000e0fa3ea989c93fa77894db11e8bb55c02865294fe9cdc548368",
+    "size":  134824306,
     "requirePackageIntegrity":  true,
-    "releaseNotes":  "เพิ่ม Game Session Controller แบบคืนค่าอัตโนมัติ, โหมด Balanced/Competitive/Extreme, ควบคุม Process/Service/Scheduled Task/Network ชั่วคราว, โปรไฟล์แยกตามเกม และ Startup Apps Manager แบบย้อนกลับได้.",
+    "releaseNotes":  "ปรับ Layout ของ Custom Power Profile ให้พอดีทุกความกว้างและ Display Scale, แก้ช่อง CPU/Boost/Unpark/PCIe/USB ไม่ให้ล้นหรือซ้อนกัน และเก็บรายละเอียด UI ของ Game Session.",
     "mandatory":  false
 }
