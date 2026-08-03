@@ -1,10 +1,10 @@
 {
-    "version":  "1.4.0",
-    "displayVersion":  "Booster X V1.4",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.4.0/BOOSTER_X_V1.4_Portable.zip",
-    "sha256":  "08a23626b156c9dc513c8eb6aae1e2641eb541d516c1cce5fb76ca6478c708b4",
-    "size":  134811247,
+    "version":  "1.5.0",
+    "displayVersion":  "Booster X V1.5",
+    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.0/BOOSTER_X_V1.5_Portable.zip",
+    "sha256":  "11f707e6816cdd251798db93691cb4f03b0f246a27243d176be245c5e20fc93c",
+    "size":  134823825,
     "requirePackageIntegrity":  true,
-    "releaseNotes":  "เพิ่ม PresentMon Capture ในโปรแกรมพร้อมตรวจ SHA-256, บันทึก BEFORE/AFTER และวิเคราะห์อัตโนมัติ, เพิ่ม Safety Snapshot และ Auto Rollback, วิเคราะห์ Frametime CSV ก่อน/หลัง, ตรวจ Package Integrity, ปรับ Power Plan ให้เลือกด้วย GUID อย่างปลอดภัย, ลบปุ่ม MAX GAME BOOST ขนาดใหญ่บน Dashboard และแก้ไขความเสถียรของระบบอัปเดต.",
+    "releaseNotes":  "เพิ่ม Game Session Controller แบบคืนค่าอัตโนมัติ, โหมด Balanced/Competitive/Extreme, ควบคุม Process/Service/Scheduled Task/Network ชั่วคราว, โปรไฟล์แยกตามเกม และ Startup Apps Manager แบบย้อนกลับได้.",
     "mandatory":  false
 }

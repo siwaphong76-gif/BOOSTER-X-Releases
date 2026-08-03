@@ -107,7 +107,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.4'
+        'User-Agent' = 'BOOSTER-X-Installer/1.5'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -474,7 +474,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status 'กำลังตรวจสอบเวอร์ชันล่าสุด...' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.4';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.5';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch { Fail 'BX-INS-005' ("ดาวน์โหลด Manifest ไม่สำเร็จ: " + $_.Exception.Message) }
     $manifest = Get-NormalizedManifest $rawManifest
