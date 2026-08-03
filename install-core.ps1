@@ -44,8 +44,8 @@ $InstallCommitted = $false
 function Write-Status {
     param([string]$Message, [ConsoleColor]$Color = [ConsoleColor]::Gray)
     if (-not $Silent) { Write-Host $Message -ForegroundColor $Color }
-    if ($script:LogPath) {
-        Add-Content -LiteralPath $script:LogPath -Value ((Get-Date).ToString('yyyy-MM-dd HH:mm:ss') + '  ' + $Message) -Encoding UTF8
+    if ($LogPath) {
+        Add-Content -LiteralPath $LogPath -Value ((Get-Date).ToString('yyyy-MM-dd HH:mm:ss') + '  ' + $Message) -Encoding UTF8
     }
 }
 
