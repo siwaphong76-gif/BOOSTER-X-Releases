@@ -1,7 +1,10 @@
 {
-  "version": "1.1.0",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.1.0/BOOSTER_X_V1.1_Portable.zip",
-  "sha256": "33efe49ba639f767b98b0153d0d25253b47c3576bc2ce1940f34968d0c087bc6",
-  "releaseNotes": "Reduced CPU and RAM usage\nAdded PowerShell-only launch protection\nAdded automatic update and restart\nImproved telemetry stability\nImproved WebView2 performance",
-  "mandatory": false
+    "version":  "1.4.0",
+    "displayVersion":  "Booster X V1.4",
+    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.4.0/BOOSTER_X_V1.4_Portable.zip",
+    "sha256":  "08a23626b156c9dc513c8eb6aae1e2641eb541d516c1cce5fb76ca6478c708b4",
+    "size":  134811247,
+    "requirePackageIntegrity":  true,
+    "releaseNotes":  "เพิ่ม PresentMon Capture ในโปรแกรมพร้อมตรวจ SHA-256, บันทึก BEFORE/AFTER และวิเคราะห์อัตโนมัติ, เพิ่ม Safety Snapshot และ Auto Rollback, วิเคราะห์ Frametime CSV ก่อน/หลัง, ตรวจ Package Integrity, ปรับ Power Plan ให้เลือกด้วย GUID อย่างปลอดภัย, ลบปุ่ม MAX GAME BOOST ขนาดใหญ่บน Dashboard และแก้ไขความเสถียรของระบบอัปเดต.",
+    "mandatory":  false
 }
