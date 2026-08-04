@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
     ตัวติดตั้ง BOOSTER X แบบคำสั่งเดียวผ่าน PowerShell
@@ -71,11 +71,43 @@ function Initialize-InstallerConsole {
     try { Clear-Host } catch { }
 
     Write-Host ''
-    Write-Host '  +========================================================+' -ForegroundColor Cyan
-    Write-Host '  |          BOOSTER X // PERFORMANCE DEPLOYMENT          |' -ForegroundColor White
-    Write-Host '  |             VERIFY  >  OPTIMIZE  >  LAUNCH            |' -ForegroundColor DarkCyan
-    Write-Host '  +========================================================+' -ForegroundColor Cyan
+    Write-Host '  ============================================================' -ForegroundColor Cyan
+    Write-Host '                       BOOSTER X' -ForegroundColor White
+    Write-Host '                 PERFORMANCE DEPLOYMENT' -ForegroundColor White
+    Write-Host '  ============================================================' -ForegroundColor Cyan
     Write-Host ''
+}
+
+function Write-DeploymentSummary {
+    param(
+        [string]$ReleaseVersion,
+        [string]$InstalledVersion,
+        [string]$Integrity = 'CHECKING',
+        [string]$Status = 'PREPARING'
+    )
+    if ($Silent) { return }
+
+    Write-Host ('  RELEASE VERSION      V' + $ReleaseVersion) -ForegroundColor White
+    if ([string]::IsNullOrWhiteSpace($InstalledVersion)) {
+        Write-Host '  INSTALLED VERSION    NOT INSTALLED' -ForegroundColor DarkGray
+    }
+    else {
+        Write-Host ('  INSTALLED VERSION    V' + $InstalledVersion) -ForegroundColor DarkGray
+    }
+    Write-Host ('  INTEGRITY            ' + $Integrity) -ForegroundColor $(if ($Integrity -eq 'VERIFIED') { 'Green' } else { 'DarkGray' })
+    Write-Host ('  STATUS               ' + $Status) -ForegroundColor $(if ($Status -match 'READY|VERIFIED|COMPLETE') { 'Green' } else { 'Cyan' })
+    Write-Host ''
+    Write-Host '  ------------------------------------------------------------' -ForegroundColor DarkGray
+}
+
+function Write-DeploymentStep {
+    param(
+        [ValidateRange(1, 4)][int]$Step,
+        [string]$Title,
+        [string]$State = 'RUNNING',
+        [ConsoleColor]$Color = [ConsoleColor]::Cyan
+    )
+    Write-Status (('[{0}/4] {1,-24} {2}' -f $Step, $Title.ToUpperInvariant(), $State.ToUpperInvariant())) $Color
 }
 
 function Fail([string]$Code, [string]$Message) {
@@ -143,7 +175,7 @@ function Invoke-DownloadFile {
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         try {
             Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
-            Write-Status "กำลังดาวน์โหลดไฟล์โปรแกรม (ครั้งที่ $attempt/3)..." Cyan
+            Write-Status ("      Download attempt $attempt of 3...") Cyan
             Invoke-WebRequest -Uri $Url -Headers $headers -UseBasicParsing -OutFile $Destination -MaximumRedirection 8 -TimeoutSec 180
             if (-not (Test-Path -LiteralPath $Destination)) { throw 'ไม่พบไฟล์หลังดาวน์โหลด' }
             if ((Get-Item -LiteralPath $Destination).Length -lt 1024) { throw 'ไฟล์ที่ดาวน์โหลดมีขนาดเล็กผิดปกติ' }
@@ -175,12 +207,12 @@ function Test-WebView2Runtime {
 
 function Ensure-WebView2Runtime {
     if (Test-WebView2Runtime) {
-        Write-Status 'Microsoft Edge WebView2 Runtime พร้อมใช้งาน' Green
+        Write-Status '      WebView2 Runtime verified' Green
         return
     }
 
     $bootstrapper = Join-Path $WorkRoot 'MicrosoftEdgeWebview2Setup.exe'
-    Write-Status 'กำลังเตรียม Microsoft Edge WebView2 Runtime...' Cyan
+    Write-Status '      Preparing WebView2 Runtime...' Cyan
     try {
         Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -UseBasicParsing -OutFile $bootstrapper -MaximumRedirection 8 -TimeoutSec 180
     }
@@ -200,7 +232,7 @@ function Ensure-WebView2Runtime {
     if ($process.ExitCode -notin @(0, 3010)) { Fail 'BX-INS-063' ('ติดตั้ง WebView2 Runtime ไม่สำเร็จ รหัส: ' + $process.ExitCode) }
     Start-Sleep -Seconds 2
     if (-not (Test-WebView2Runtime)) { Fail 'BX-INS-064' 'ติดตั้ง WebView2 Runtime แล้ว แต่ยังตรวจไม่พบ Runtime' }
-    Write-Status 'ติดตั้ง Microsoft Edge WebView2 Runtime สำเร็จ' Green
+    Write-Status '      WebView2 Runtime installed' Green
 }
 
 function Test-ZipEntryPath {
@@ -309,7 +341,7 @@ function Test-PackageIntegrity {
             Fail 'BX-INS-051' ("พบไฟล์ที่ไม่ได้อยู่ใน PACKAGE_INTEGRITY.json: " + $file.FullName.Substring($rootFull.Length))
         }
     }
-    Write-Status "ตรวจสอบไฟล์ภายในแพ็กเกจครบ $($entries.Count) รายการแล้ว" Green
+    Write-Status ("      Package integrity verified: $($entries.Count) files") Green
 }
 
 function Stop-InstalledApplication {
@@ -467,10 +499,10 @@ function Start-BoosterAndVerify {
     if (-not (Test-Path -LiteralPath $launcher)) { Fail 'BX-LAUNCH-001' 'ไม่พบ Launcher หลังติดตั้ง ระบบจะซ่อมแซมในการเรียกครั้งถัดไป' }
 
     if (Test-BoosterProcessRunning) {
-        Write-Status 'BOOSTER X ทำงานอยู่แล้ว กำลังเรียกหน้าต่างกลับมา...' Cyan
+        Write-Status '      BOOSTER X is already running; restoring the window...' Cyan
     }
     else {
-        Write-Status 'กำลังเปิด BOOSTER X...' Cyan
+        Write-Status '      Starting BOOSTER X...' Cyan
     }
 
     $powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -497,7 +529,7 @@ function Start-BoosterAndVerify {
             if ([string]$ready.status -eq 'READY') {
                 Remove-Item -LiteralPath $readyFile -Force -ErrorAction SilentlyContinue
                 Remove-Item -LiteralPath $LaunchFailureLog -Force -ErrorAction SilentlyContinue
-                Write-Status ("เปิด BOOSTER X สำเร็จ — UI_READY, PID " + $ready.processId) Green
+                Write-Status ("      BOOSTER X ready; PID " + $ready.processId) Green
                 return
             }
         }
@@ -529,7 +561,7 @@ try {
     if ($manifestHost -ne 'raw.githubusercontent.com') { Fail 'BX-INS-004' 'Manifest ต้องมาจาก raw.githubusercontent.com เท่านั้น' }
 
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    Write-Status 'กำลังตรวจสอบเวอร์ชันล่าสุด...' Cyan
+    Write-DeploymentStep 1 'Checking release' 'Running' Cyan
     try {
         $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.6.0';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
@@ -546,23 +578,33 @@ try {
     $manifest = Get-NormalizedManifest $rawManifest
     $installedVersion = Get-InstalledVersion
 
-    Write-Status (" RELEASE CHANNEL  //  V" + $manifest.Version) White
-    if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status (" LOCAL BUILD      //  V" + $installedVersion) DarkGray }
+    Write-DeploymentSummary -ReleaseVersion $manifest.Version -InstalledVersion $installedVersion -Integrity 'CHECKING' -Status 'PREPARING'
 
     $sameVersion = -not [string]::IsNullOrWhiteSpace($installedVersion) -and $installedVersion.Trim() -eq $manifest.Version
     $installedPackageHealthy = (Test-Path -LiteralPath $InstallRoot) -and (Test-InstalledPackageHealthy)
     if (-not $Force -and $sameVersion -and $installedPackageHealthy) {
-        Write-Status ' STATUS           //  READY - INTEGRITY VERIFIED' Green
+        Write-DeploymentStep 1 'Checking release' 'Complete' Green
+        Write-DeploymentStep 2 'Downloading package' 'Not required' DarkGray
+        Write-DeploymentStep 3 'Installing package' 'Not required' DarkGray
+        Write-DeploymentStep 4 'Launching BOOSTER X' 'Running' Cyan
         Write-Diagnostic ('Verified install root: ' + $InstallRoot)
-        if (-not $NoLaunch) { Start-BoosterAndVerify }
+        if (-not $NoLaunch) {
+            Start-BoosterAndVerify
+            Write-DeploymentStep 4 'Launching BOOSTER X' 'Complete' Green
+        }
+        else {
+            Write-DeploymentStep 4 'Launching BOOSTER X' 'Skipped' DarkGray
+        }
+        Write-Status '  STATUS               READY' Green
+        Write-Status '  ------------------------------------------------------------' DarkGray
         return
     }
 
     if (Test-Path -LiteralPath $InstallRoot) {
-        Write-Status 'พบโปรแกรมเดิมที่ต้องอัปเดตหรือซ่อมแซม ระบบจะดำเนินการอัตโนมัติ' Yellow
+        Write-Status '      Existing installation requires update or repair' Yellow
     }
     else {
-        Write-Status 'ยังไม่พบโปรแกรม ระบบจะติดตั้งให้อัตโนมัติ' Cyan
+        Write-Status '      No existing installation found; a clean install will be performed' Cyan
     }
 
     New-Item -ItemType Directory -Force -Path $WorkRoot | Out-Null
@@ -573,13 +615,14 @@ try {
         Fail 'BX-INS-021' ("ขนาดไฟล์ไม่ตรงกับ Manifest: ได้ $downloadLength bytes, ควรเป็น $($manifest.Size) bytes")
     }
     if ($downloadLength -gt 1GB) { Fail 'BX-INS-022' 'ไฟล์ดาวน์โหลดมีขนาดเกินขีดจำกัด 1 GB' }
-    Write-Status 'กำลังตรวจสอบ SHA-256 ของไฟล์ดาวน์โหลด...' Cyan
+    Write-DeploymentStep 2 'Downloading package' 'Complete' Green
+    Write-DeploymentStep 3 'Verifying package' 'Running' Cyan
     $actualHash = (Get-FileHash -LiteralPath $DownloadPartial -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actualHash -ne $manifest.Sha256) { Fail 'BX-INS-023' ("SHA-256 ไม่ตรง ไฟล์จะไม่ถูกติดตั้ง`nExpected: $($manifest.Sha256)`nActual:   $actualHash") }
     Move-Item -LiteralPath $DownloadPartial -Destination $DownloadZip -Force
-    Write-Status 'SHA-256 ถูกต้อง' Green
+    Write-DeploymentStep 3 'Verifying package' 'SHA-256 verified' Green
 
-    Write-Status 'กำลังตรวจสอบและแตกไฟล์อย่างปลอดภัย...' Cyan
+    Write-DeploymentStep 3 'Installing package' 'Running' Cyan
     Expand-SafeZip -ZipPath $DownloadZip -Destination $ExtractRoot
     $packageRoot = Resolve-PackageRoot $ExtractRoot
     Test-PackageIntegrity $packageRoot
@@ -612,8 +655,9 @@ try {
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
-    Write-Status ' STATUS           //  DEPLOYMENT VERIFIED' Green
-    Write-Status (" ACTIVE BUILD     //  V" + $manifest.Version) White
+    Write-DeploymentStep 3 'Installing package' 'Complete' Green
+    Write-Status ('  ACTIVE VERSION       V' + $manifest.Version) White
+    Write-DeploymentStep 4 'Launching BOOSTER X' $(if ($NoLaunch) { 'Skipped' } else { 'Running' }) $(if ($NoLaunch) { 'DarkGray' } else { 'Cyan' })
     Write-Diagnostic ('Installed to: ' + $InstallRoot)
     Write-Diagnostic ('Install log: ' + $LogPath)
 
@@ -636,7 +680,9 @@ try {
     if ($BackupCreated) { Remove-Item -LiteralPath $BackupRoot -Recurse -Force -ErrorAction SilentlyContinue }
     $BackupCreated = $false
     $InstallCommitted = $false
-    Write-Status ' BOOSTER X        //  READY TO LAUNCH' Green
+    Write-DeploymentStep 4 'Launching BOOSTER X' $(if ($NoLaunch) { 'Skipped' } else { 'Complete' }) $(if ($NoLaunch) { 'DarkGray' } else { 'Green' })
+    Write-Status '  STATUS               READY' Green
+    Write-Status '  ------------------------------------------------------------' DarkGray
 }
 catch {
     $message = $_.Exception.Message
