@@ -1,4 +1,4 @@
-﻿# BOOSTER X bootstrap intentionally has no param/CmdletBinding block so it can be
+# BOOSTER X bootstrap is intentionally UTF-8 without BOM and has no param/CmdletBinding block so it can be
 # executed reliably through both `irm | iex` and a downloaded .ps1 file.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -22,15 +22,15 @@ try {
     Invoke-WebRequest -UseBasicParsing -Uri $bxRequestUrl -Headers $bxHeaders -OutFile $bxTempPath -TimeoutSec 60 -MaximumRedirection 5
 
     if (-not (Test-Path -LiteralPath $bxTempPath -PathType Leaf)) {
-        throw 'ดาวน์โหลดตัวติดตั้งไม่สำเร็จ: ไม่พบไฟล์ที่ดาวน์โหลด'
+        throw 'Installer download failed: the downloaded file was not found.'
     }
     $bxInfo = Get-Item -LiteralPath $bxTempPath
     if ($bxInfo.Length -lt 4096 -or $bxInfo.Length -gt 2MB) {
-        throw "ขนาดตัวติดตั้งไม่ถูกต้อง: $($bxInfo.Length) bytes"
+        throw "Installer download size is invalid: $($bxInfo.Length) bytes"
     }
     $bxFirstLine = Get-Content -LiteralPath $bxTempPath -TotalCount 1 -Encoding UTF8
     if ($bxFirstLine -notmatch '^#requires\s+-Version\s+5\.1') {
-        throw 'เนื้อหาที่ดาวน์โหลดไม่ใช่ตัวติดตั้ง BOOSTER X ที่ถูกต้อง'
+        throw 'The downloaded content is not a valid BOOSTER X installer core.'
     }
 
     Move-Item -LiteralPath $bxTempPath -Destination $bxScriptPath -Force
@@ -39,7 +39,7 @@ catch {
     # A previously downloaded core remains useful when GitHub is temporarily
     # unavailable. The core itself will only open an already verified install.
     if (-not (Test-Path -LiteralPath $bxScriptPath -PathType Leaf)) { throw }
-    Write-Warning ('ไม่สามารถดาวน์โหลดตัวติดตั้งล่าสุด กำลังใช้ Bootstrap ที่บันทึกไว้: ' + $_.Exception.Message)
+    Write-Warning ('Unable to download the latest installer. Using the cached bootstrap core: ' + $_.Exception.Message)
 }
 
 $bxPowerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -51,5 +51,5 @@ $bxProcess = Start-Process -FilePath $bxPowerShell -ArgumentList @(
 ) -Wait -PassThru
 
 if ($bxProcess.ExitCode -ne 0) {
-    throw "BOOSTER X Installer จบการทำงานด้วยรหัส $($bxProcess.ExitCode)"
+    throw "BOOSTER X Installer exited with code $($bxProcess.ExitCode)"
 }
