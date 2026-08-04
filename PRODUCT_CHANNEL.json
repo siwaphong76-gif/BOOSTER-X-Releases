@@ -5,6 +5,6 @@
     "sha256":  "4812fe6ab380b1a5d0bc4b3dbf1df0d414e15099f7aa53ae4e901c7bff91a315",
     "size":  134830032,
     "requirePackageIntegrity":  true,
-    "releaseNotes":  "แก้ MAX GAME BOOST ไม่ตอบสนอง, ลดงานหนักระหว่างตรวจสถานะ, ป้องกันการเริ่ม Session ซ้ำ และแก้ Restore All ให้ปิด Safety Transaction ที่คืนค่าครบแล้วได้ถูกต้อง พร้อมรวม UI polish จาก V1.5.1.",
+    "releaseNotes":  "เพิ่ม Startup Diagnostics และ UI_READY handshake, ตรวจ Exit Code ผ่าน Launcher, แก้การสร้าง Desktop Shortcut ไม่ให้ทำการติดตั้งล้มเหลว และป้องกัน Rollback กลับไปยังชุดไฟล์เดิมที่ไม่สมบูรณ์.",
     "mandatory":  false
 }
