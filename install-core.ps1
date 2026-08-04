@@ -51,6 +51,33 @@ function Write-Status {
     }
 }
 
+function Write-Diagnostic {
+    param([string]$Message)
+    if ($LogPath) {
+        Add-Content -LiteralPath $LogPath -Value ((Get-Date).ToString('yyyy-MM-dd HH:mm:ss') + '  [DIAGNOSTIC] ' + $Message) -Encoding UTF8
+    }
+}
+
+function Initialize-InstallerConsole {
+    if ($Silent) { return }
+    try {
+        $utf8 = New-Object Text.UTF8Encoding($false)
+        [Console]::InputEncoding = $utf8
+        [Console]::OutputEncoding = $utf8
+        $global:OutputEncoding = $utf8
+    }
+    catch { }
+    try { $Host.UI.RawUI.WindowTitle = 'BOOSTER X | PERFORMANCE DEPLOYMENT' } catch { }
+    try { Clear-Host } catch { }
+
+    Write-Host ''
+    Write-Host '  +========================================================+' -ForegroundColor Cyan
+    Write-Host '  |          BOOSTER X // PERFORMANCE DEPLOYMENT          |' -ForegroundColor White
+    Write-Host '  |             VERIFY  >  OPTIMIZE  >  LAUNCH            |' -ForegroundColor DarkCyan
+    Write-Host '  +========================================================+' -ForegroundColor Cyan
+    Write-Host ''
+}
+
 function Fail([string]$Code, [string]$Message) {
     throw "[$Code] $Message"
 }
@@ -493,10 +520,9 @@ try {
     $LogPath = Join-Path $LogRoot ('install-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
     [IO.File]::WriteAllText($LogPath, "BOOSTER X INSTALL LOG`r`n", (New-Object Text.UTF8Encoding($true)))
 
-    Write-Status '============================================================' Cyan
-    Write-Status ' ตัวติดตั้ง BOOSTER X' White
-    Write-Status '============================================================' Cyan
-    Write-Status ('Manifest: ' + $ManifestUrl) DarkGray
+    Initialize-InstallerConsole
+    Write-Diagnostic ('Manifest: ' + $ManifestUrl)
+    Write-Diagnostic ('Install root: ' + $InstallRoot)
 
     if ($ManifestUrl -notmatch '^https://') { Fail 'BX-INS-003' 'Manifest URL ต้องใช้ HTTPS เท่านั้น' }
     $manifestHost = ([Uri]$ManifestUrl).DnsSafeHost.ToLowerInvariant()
@@ -520,14 +546,14 @@ try {
     $manifest = Get-NormalizedManifest $rawManifest
     $installedVersion = Get-InstalledVersion
 
-    Write-Status ("เวอร์ชันที่จะติดตั้ง: " + $manifest.Version) White
-    if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status ("เวอร์ชันที่ติดตั้งอยู่: " + $installedVersion) Yellow }
+    Write-Status (" RELEASE CHANNEL  //  V" + $manifest.Version) White
+    if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status (" LOCAL BUILD      //  V" + $installedVersion) DarkGray }
 
     $sameVersion = -not [string]::IsNullOrWhiteSpace($installedVersion) -and $installedVersion.Trim() -eq $manifest.Version
     $installedPackageHealthy = (Test-Path -LiteralPath $InstallRoot) -and (Test-InstalledPackageHealthy)
     if (-not $Force -and $sameVersion -and $installedPackageHealthy) {
-        Write-Status 'โปรแกรมเป็นเวอร์ชันล่าสุดและไฟล์ครบ ไม่ต้องดาวน์โหลดใหม่' Green
-        Write-Status ('ตำแหน่ง: ' + $InstallRoot) DarkGray
+        Write-Status ' STATUS           //  READY - INTEGRITY VERIFIED' Green
+        Write-Diagnostic ('Verified install root: ' + $InstallRoot)
         if (-not $NoLaunch) { Start-BoosterAndVerify }
         return
     }
@@ -586,10 +612,10 @@ try {
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
-    Write-Status 'ติดตั้งและตรวจสอบไฟล์ BOOSTER X สำเร็จ' Green
-    Write-Status ('เวอร์ชัน: ' + $manifest.Version) White
-    Write-Status ('ตำแหน่ง: ' + $InstallRoot) DarkGray
-    Write-Status ('บันทึกการติดตั้ง: ' + $LogPath) DarkGray
+    Write-Status ' STATUS           //  DEPLOYMENT VERIFIED' Green
+    Write-Status (" ACTIVE BUILD     //  V" + $manifest.Version) White
+    Write-Diagnostic ('Installed to: ' + $InstallRoot)
+    Write-Diagnostic ('Install log: ' + $LogPath)
 
     if (-not $NoLaunch) {
         $preserveInstalledFiles = -not $installedPackageHealthy
@@ -610,7 +636,7 @@ try {
     if ($BackupCreated) { Remove-Item -LiteralPath $BackupRoot -Recurse -Force -ErrorAction SilentlyContinue }
     $BackupCreated = $false
     $InstallCommitted = $false
-    Write-Status 'BOOSTER X พร้อมใช้งาน' Green
+    Write-Status ' BOOSTER X        //  READY TO LAUNCH' Green
 }
 catch {
     $message = $_.Exception.Message
