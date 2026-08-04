@@ -7,13 +7,4 @@
     "requirePackageIntegrity":  true,
     "releaseNotes":  "เพิ่ม Competitive Lock, Game Core Shield, Background Resource Cage และ Disk I/O Shield; แก้ Boost โดยไม่เปิดเกม; ปิดธุรกรรมค้างหลังคืน Power Plan; เพิ่ม Universal Smart Launcher ที่ค้นหา ติดตั้ง ซ่อมแซม และเปิดผ่าน Safe Mode อัตโนมัติ.",
     "mandatory":  false
-}{
-    "version":  "1.5.3",
-    "displayVersion":  "Booster X V1.5.3",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.3/BOOSTER_X_V1.5.3_Portable.zip",
-    "sha256":  "4812fe6ab380b1a5d0bc4b3dbf1df0d414e15099f7aa53ae4e901c7bff91a315",
-    "size":  134830032,
-    "requirePackageIntegrity":  true,
-    "releaseNotes":  "เพิ่ม Startup Diagnostics และ UI_READY handshake, ตรวจ Exit Code ผ่าน Launcher, แก้การสร้าง Desktop Shortcut ไม่ให้ทำการติดตั้งล้มเหลว และป้องกัน Rollback กลับไปยังชุดไฟล์เดิมที่ไม่สมบูรณ์.",
-    "mandatory":  false
 }
