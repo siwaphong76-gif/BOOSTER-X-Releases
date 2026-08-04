@@ -1,10 +1,10 @@
 {
-    "version":  "1.6.0",
-    "displayVersion":  "Booster X V1.6.0",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.6.0/BOOSTER_X_V1.6.0_Portable.zip",
-    "sha256":  "6cd35f4d1f89b6f20ce6181182b72f9048c7a7317e732ff83407697e5d8389ab",
-    "size":  134840865,
+    "version":  "1.7.0",
+    "displayVersion":  "Booster X V1.7.0",
+    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.0/BOOSTER_X_V1.7.0_Portable.zip",
+    "sha256":  "1953dacf9bb7ae433b43bd753f928ffc1f0efa8bd578dbc9b593d2c5ca4f52fe",
+    "size":  134853054,
     "requirePackageIntegrity":  true,
-    "releaseNotes":  "เพิ่ม Competitive Lock, Game Core Shield, Background Resource Cage และ Disk I/O Shield; แก้ Boost โดยไม่เปิดเกม; ปิดธุรกรรมค้างหลังคืน Power Plan; เพิ่ม Universal Smart Launcher ที่ค้นหา ติดตั้ง ซ่อมแซม และเปิดผ่าน Safe Mode อัตโนมัติ.",
+    "releaseNotes":  "เพิ่ม Smart Process Role Engine และ Process Family Tracking; แยกนโยบาย Game, Launcher, Anti-cheat, Renderer และ Helper; เพิ่ม First-Run Compatibility/Consent, Crash-proof Session Transaction, Launcher Self-Repair และ Safe Uninstall.",
     "mandatory":  false
 }

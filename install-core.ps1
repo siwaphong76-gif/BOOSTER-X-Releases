@@ -162,7 +162,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.6.0'
+        'User-Agent' = 'BOOSTER-X-Installer/1.7.0'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -409,6 +409,17 @@ if (-not $Silent) {
     $answer = Read-Host 'Uninstall BOOSTER X? Type Y to confirm'
     if ($answer -notmatch '^(Y|YES)$') { Write-Host 'Uninstall cancelled'; exit 0 }
 }
+$exe = Join-Path $installRoot 'BOOSTER X.exe'
+if (Test-Path -LiteralPath $exe -PathType Leaf) {
+    if (-not $Silent) { Write-Host 'Restoring BOOSTER X session settings before uninstall...' -ForegroundColor Cyan }
+    $recovery = Start-Process -FilePath $exe -WorkingDirectory $installRoot -ArgumentList '--restore-and-exit' -Wait -PassThru
+    if ($recovery.ExitCode -ne 0) {
+        throw "BOOSTER X recovery failed with exit code $($recovery.ExitCode). Uninstall stopped to preserve system state."
+    }
+}
+elseif (Test-Path -LiteralPath (Join-Path $dataRoot 'pending-transaction.json')) {
+    throw 'BOOSTER X.exe is missing while a recovery transaction is pending. Run the install command once to repair before uninstalling.'
+}
 try {
     $prefix = [IO.Path]::GetFullPath($installRoot).TrimEnd('\') + '\'
     Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
@@ -562,7 +573,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status ' CHANNEL          //  CHECKING LATEST RELEASE' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.6.0';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.0';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch {
         $manifestError = $_.Exception.Message
