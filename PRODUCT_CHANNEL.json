@@ -1,9 +1,9 @@
 {
-    "version":  "1.5.2",
-    "displayVersion":  "Booster X V1.5.2",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.2/BOOSTER_X_V1.5.2_Portable.zip",
-    "sha256":  "197b449f2ea17538d05735acfefda810b363a5c2877669567e1b9cd3efc12e02",
-    "size":  134825937,
+    "version":  "1.5.3",
+    "displayVersion":  "Booster X V1.5.3",
+    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.5.3/BOOSTER_X_V1.5.3_Portable.zip",
+    "sha256":  "4812fe6ab380b1a5d0bc4b3dbf1df0d414e15099f7aa53ae4e901c7bff91a315",
+    "size":  134830032,
     "requirePackageIntegrity":  true,
     "releaseNotes":  "แก้ MAX GAME BOOST ไม่ตอบสนอง, ลดงานหนักระหว่างตรวจสถานะ, ป้องกันการเริ่ม Session ซ้ำ และแก้ Restore All ให้ปิด Safety Transaction ที่คืนค่าครบแล้วได้ถูกต้อง พร้อมรวม UI polish จาก V1.5.1.",
     "mandatory":  false

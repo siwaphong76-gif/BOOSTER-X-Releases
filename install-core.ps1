@@ -41,6 +41,7 @@ $BackupRoot = Join-Path (Split-Path -Parent $InstallRoot) ('.BOOSTERX-backup-' +
 $LogPath = $null
 $BackupCreated = $false
 $InstallCommitted = $false
+$PreserveCommittedInstall = $false
 
 function Write-Status {
     param([string]$Message, [ConsoleColor]$Color = [ConsoleColor]::Gray)
@@ -107,7 +108,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.5.2'
+        'User-Agent' = 'BOOSTER-X-Installer/1.5.3'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -317,6 +318,25 @@ function New-BoosterShortcut {
     $shortcut.Save()
 }
 
+function Try-NewBoosterShortcut {
+    param(
+        [string]$ShortcutPath,
+        [string]$ShortcutName
+    )
+    try {
+        $parent = Split-Path -Parent $ShortcutPath
+        if ([string]::IsNullOrWhiteSpace($parent)) { throw 'ไม่พบตำแหน่งโฟลเดอร์ Shortcut' }
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+        New-BoosterShortcut $ShortcutPath
+        Write-Status ("สร้าง Shortcut $ShortcutName สำเร็จ") DarkGray
+        return $true
+    }
+    catch {
+        Write-Status ("คำเตือน: สร้าง Shortcut $ShortcutName ไม่สำเร็จ — " + $_.Exception.Message) Yellow
+        return $false
+    }
+}
+
 function Write-UninstallScript {
     $content = @'
 #requires -Version 5.1
@@ -407,6 +427,8 @@ function Write-LaunchFailure {
         ('Time: ' + (Get-Date).ToString('O')),
         ('InstallRoot: ' + $InstallRoot),
         ('Message: ' + $Message),
+        ('StartupLog: ' + (Join-Path $LogRoot 'startup-latest.log')),
+        ('LauncherLog: ' + (Join-Path $LogRoot 'launcher-startup-error.log')),
         ('RecoveryLog: ' + (Join-Path $DataRoot 'recovery.log')),
         ('WebViewLog: ' + (Join-Path $DataRoot 'webview-init-error.log'))
     )
@@ -425,7 +447,9 @@ function Start-BoosterAndVerify {
     }
 
     $powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-    $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "' + $launcher + '"'
+    $readyFile = Join-Path $LogRoot ('startup-ready-installer-' + [Guid]::NewGuid().ToString('N') + '.json')
+    Remove-Item -LiteralPath $readyFile -Force -ErrorAction SilentlyContinue
+    $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "' + $launcher + '" -Silent -ReadyFile "' + $readyFile + '" -StartupTimeoutSeconds 45'
     try {
         $launcherProcess = Start-Process -FilePath $powerShell -ArgumentList $arguments -WorkingDirectory $InstallRoot -Wait -PassThru
     }
@@ -434,21 +458,28 @@ function Start-BoosterAndVerify {
         Fail 'BX-LAUNCH-002' ("Launcher เริ่มทำงานไม่สำเร็จ: " + $_.Exception.Message + "`nLog: " + $LaunchFailureLog)
     }
     if ($launcherProcess.ExitCode -ne 0) {
-        $message = 'Launcher ส่งรหัสผิดพลาด ' + $launcherProcess.ExitCode
+        $startupLog = Join-Path $LogRoot 'startup-latest.log'
+        $message = 'Launcher ส่งรหัสผิดพลาด ' + $launcherProcess.ExitCode + '. Startup log: ' + $startupLog
         Write-LaunchFailure $message
         Fail 'BX-LAUNCH-003' ($message + "`nLog: " + $LaunchFailureLog)
     }
 
-    for ($attempt = 1; $attempt -le 12; $attempt++) {
-        Start-Sleep -Seconds 1
-        if (Test-BoosterProcessRunning) {
-            Remove-Item -LiteralPath $LaunchFailureLog -Force -ErrorAction SilentlyContinue
-            Write-Status 'เปิด BOOSTER X สำเร็จ' Green
-            return
+    if (Test-Path -LiteralPath $readyFile -PathType Leaf) {
+        try {
+            $ready = Get-Content -LiteralPath $readyFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ([string]$ready.status -eq 'READY') {
+                Remove-Item -LiteralPath $readyFile -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $LaunchFailureLog -Force -ErrorAction SilentlyContinue
+                Write-Status ("เปิด BOOSTER X สำเร็จ — UI_READY, PID " + $ready.processId) Green
+                return
+            }
+        }
+        catch {
+            Write-Status ("คำเตือน: อ่าน Startup Ready Handshake ไม่สำเร็จ — " + $_.Exception.Message) Yellow
         }
     }
 
-    $message = 'โปรแกรมเริ่มทำงานแล้วปิดตัวก่อนแสดงหน้าต่าง กรุณาดู Recovery/WebView log ที่ระบุไว้'
+    $message = 'โปรแกรมไม่ส่งสัญญาณ UI_READY กรุณาดู startup-latest.log และ launcher-startup-error.log'
     Write-LaunchFailure $message
     Fail 'BX-LAUNCH-004' ($message + "`nLog: " + $LaunchFailureLog)
 }
@@ -474,7 +505,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status 'กำลังตรวจสอบเวอร์ชันล่าสุด...' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.5.2';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.5.3';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch { Fail 'BX-INS-005' ("ดาวน์โหลด Manifest ไม่สำเร็จ: " + $_.Exception.Message) }
     $manifest = Get-NormalizedManifest $rawManifest
@@ -484,7 +515,8 @@ try {
     if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status ("เวอร์ชันที่ติดตั้งอยู่: " + $installedVersion) Yellow }
 
     $sameVersion = -not [string]::IsNullOrWhiteSpace($installedVersion) -and $installedVersion.Trim() -eq $manifest.Version
-    if (-not $Force -and $sameVersion -and (Test-InstalledPackageHealthy)) {
+    $installedPackageHealthy = (Test-Path -LiteralPath $InstallRoot) -and (Test-InstalledPackageHealthy)
+    if (-not $Force -and $sameVersion -and $installedPackageHealthy) {
         Write-Status 'โปรแกรมเป็นเวอร์ชันล่าสุดและไฟล์ครบ ไม่ต้องดาวน์โหลดใหม่' Green
         Write-Status ('ตำแหน่ง: ' + $InstallRoot) DarkGray
         if (-not $NoLaunch) { Start-BoosterAndVerify }
@@ -537,8 +569,11 @@ try {
     Test-PackageIntegrity $InstallRoot
 
     New-Item -ItemType Directory -Force -Path $StartMenuRoot | Out-Null
-    New-BoosterShortcut $DesktopShortcut
-    New-BoosterShortcut $StartMenuShortcut
+    $desktopShortcutCreated = Try-NewBoosterShortcut $DesktopShortcut 'บน Desktop'
+    $startMenuShortcutCreated = Try-NewBoosterShortcut $StartMenuShortcut 'ใน Start Menu'
+    if (-not $desktopShortcutCreated -and -not $startMenuShortcutCreated) {
+        Write-Status 'คำเตือน: ไม่สามารถสร้าง Shortcut ได้ แต่โปรแกรมติดตั้งสมบูรณ์และยังเปิดผ่านคำสั่ง PowerShell ได้' Yellow
+    }
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
@@ -548,10 +583,18 @@ try {
     Write-Status ('บันทึกการติดตั้ง: ' + $LogPath) DarkGray
 
     if (-not $NoLaunch) {
-        $preserveInstalledFiles = -not $BackupCreated
+        $preserveInstalledFiles = -not $installedPackageHealthy
         try { Start-BoosterAndVerify }
         catch {
-            if ($preserveInstalledFiles) { $InstallCommitted = $false }
+            if ($preserveInstalledFiles) {
+                $InstallCommitted = $false
+                if ($BackupCreated -and (Test-Path -LiteralPath $BackupRoot)) {
+                    Remove-Item -LiteralPath $BackupRoot -Recurse -Force -ErrorAction SilentlyContinue
+                    $BackupCreated = $false
+                }
+                $PreserveCommittedInstall = $true
+                Write-Status 'เก็บไฟล์ติดตั้งที่ตรวจสอบแล้วไว้เพื่อเปิดซ้ำและวิเคราะห์ ไม่ย้อนกลับไปยังชุดไฟล์เดิมที่ไม่สมบูรณ์' Yellow
+            }
             throw
         }
     }
@@ -564,7 +607,7 @@ catch {
     $message = $_.Exception.Message
     try { Write-Status ('ติดตั้ง/เปิดโปรแกรมไม่สำเร็จ: ' + $message) Red } catch { Write-Host ('ติดตั้ง/เปิดโปรแกรมไม่สำเร็จ: ' + $message) -ForegroundColor Red }
     try {
-        if ($InstallCommitted -and (Test-Path -LiteralPath $InstallRoot)) { Remove-Item -LiteralPath $InstallRoot -Recurse -Force -ErrorAction SilentlyContinue }
+        if (-not $PreserveCommittedInstall -and $InstallCommitted -and (Test-Path -LiteralPath $InstallRoot)) { Remove-Item -LiteralPath $InstallRoot -Recurse -Force -ErrorAction SilentlyContinue }
         if ($BackupCreated -and (Test-Path -LiteralPath $BackupRoot)) {
             Move-Item -LiteralPath $BackupRoot -Destination $InstallRoot -Force
             Write-Status 'คืนโปรแกรมเวอร์ชันเดิมสำเร็จ' Yellow
