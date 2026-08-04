@@ -108,7 +108,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.5.3'
+        'User-Agent' = 'BOOSTER-X-Installer/1.6.0'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -505,9 +505,18 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status 'กำลังตรวจสอบเวอร์ชันล่าสุด...' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.5.3';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.6.0';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
-    catch { Fail 'BX-INS-005' ("ดาวน์โหลด Manifest ไม่สำเร็จ: " + $_.Exception.Message) }
+    catch {
+        $manifestError = $_.Exception.Message
+        $offlinePackageHealthy = (Test-Path -LiteralPath $InstallRoot) -and (Test-InstalledPackageHealthy)
+        if ($offlinePackageHealthy) {
+            Write-Status ('เชื่อมต่อ GitHub ไม่สำเร็จ กำลังเปิดเวอร์ชันที่ติดตั้งอยู่: ' + $manifestError) Yellow
+            if (-not $NoLaunch) { Start-BoosterAndVerify }
+            return
+        }
+        Fail 'BX-INS-005' ("ดาวน์โหลด Manifest ไม่สำเร็จและไม่พบโปรแกรมที่สมบูรณ์สำหรับเปิดแบบ Offline: " + $manifestError)
+    }
     $manifest = Get-NormalizedManifest $rawManifest
     $installedVersion = Get-InstalledVersion
 
