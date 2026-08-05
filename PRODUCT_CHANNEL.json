@@ -1,10 +1,10 @@
 {
-    "version":  "1.7.0",
-    "displayVersion":  "Booster X V1.7.0",
-    "downloadUrl":  "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.0/BOOSTER_X_V1.7.0_Portable.zip",
-    "sha256":  "1953dacf9bb7ae433b43bd753f928ffc1f0efa8bd578dbc9b593d2c5ca4f52fe",
-    "size":  134853054,
-    "requirePackageIntegrity":  true,
-    "releaseNotes":  "เพิ่ม Smart Process Role Engine และ Process Family Tracking; แยกนโยบาย Game, Launcher, Anti-cheat, Renderer และ Helper; เพิ่ม First-Run Compatibility/Consent, Crash-proof Session Transaction, Launcher Self-Repair และ Safe Uninstall.",
-    "mandatory":  false
+  "version": "1.7.1",
+  "displayVersion": "Booster X V1.7.1",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.1/BOOSTER_X_V1.7.1_Portable.zip",
+  "sha256": "473b08ca04b09c842684e9c806650b313dec2b6f7994f2a971ef037d28d63de6",
+  "size": 144481396,
+  "requirePackageIntegrity": true,
+  "releaseNotes": "ปรับหน้า First-Run เป็น AI Cyber พร้อมโลโก้ BOOSTER X และไอคอน 3D; เพิ่ม Electric Blue plasma styling; แก้พื้นหลังซ้อน ขอบ Glow ตำแหน่งปุ่ม และการแสดงผลหน้าต่างขนาดเล็ก.",
+  "mandatory": false
 }
