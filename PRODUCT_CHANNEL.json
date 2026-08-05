@@ -2,8 +2,8 @@
   "version": "1.7.1",
   "displayVersion": "Booster X V1.7.1",
   "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.1/BOOSTER_X_V1.7.1_Portable.zip",
-  "sha256": "473b08ca04b09c842684e9c806650b313dec2b6f7994f2a971ef037d28d63de6",
-  "size": 144481396,
+  "sha256": "93bd56d4846ec2f1ad446ce55982c807dd2666f02ecc4bff61ad96b84f8fd482",
+  "size": 144481437,
   "requirePackageIntegrity": true,
   "releaseNotes": "ปรับหน้า First-Run เป็น AI Cyber พร้อมโลโก้ BOOSTER X และไอคอน 3D; เพิ่ม Electric Blue plasma styling; แก้พื้นหลังซ้อน ขอบ Glow ตำแหน่งปุ่ม และการแสดงผลหน้าต่างขนาดเล็ก.",
   "mandatory": false
