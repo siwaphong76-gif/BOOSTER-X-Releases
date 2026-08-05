@@ -358,38 +358,17 @@ function Stop-InstalledApplication {
     }
 }
 
-function New-BoosterShortcut {
-    param([string]$ShortcutPath)
-    $launcher = Join-Path $InstallRoot 'Launch-BOOSTER-X.ps1'
-    if (-not (Test-Path -LiteralPath $launcher)) { Fail 'BX-INS-060' 'ไม่พบ Launch-BOOSTER-X.ps1 หลังติดตั้ง' }
-    $shell = New-Object -ComObject WScript.Shell
-    $shortcut = $shell.CreateShortcut($ShortcutPath)
-    $shortcut.TargetPath = (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe')
-    $shortcut.Arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "' + $launcher + '"'
-    $shortcut.WorkingDirectory = $InstallRoot
-    $exe = Join-Path $InstallRoot 'BOOSTER X.exe'
-    if (Test-Path -LiteralPath $exe) { $shortcut.IconLocation = '"' + $exe + '",0' }
-    $shortcut.Description = 'เปิด BOOSTER X'
-    $shortcut.Save()
-}
-
-function Try-NewBoosterShortcut {
-    param(
-        [string]$ShortcutPath,
-        [string]$ShortcutName
-    )
-    try {
-        $parent = Split-Path -Parent $ShortcutPath
-        if ([string]::IsNullOrWhiteSpace($parent)) { throw 'ไม่พบตำแหน่งโฟลเดอร์ Shortcut' }
-        New-Item -ItemType Directory -Path $parent -Force | Out-Null
-        New-BoosterShortcut $ShortcutPath
-        Write-Status (" SHORTCUT         //  " + $ShortcutName + " READY") DarkGray
-        return $true
-    }
-    catch {
-        Write-Diagnostic ("Shortcut warning for " + $ShortcutName + ": " + $_.Exception.Message)
-        Write-Status (" SHORTCUT         //  " + $ShortcutName + " SKIPPED") Yellow
-        return $false
+function Remove-LegacyLaunchShortcuts {
+    foreach ($shortcut in @($DesktopShortcut, $StartMenuShortcut)) {
+        if (-not (Test-Path -LiteralPath $shortcut -PathType Leaf)) { continue }
+        try {
+            Remove-Item -LiteralPath $shortcut -Force -ErrorAction Stop
+            Write-Diagnostic ('Removed legacy launch shortcut: ' + $shortcut)
+        }
+        catch {
+            Write-Diagnostic ('Unable to remove legacy launch shortcut: ' + $shortcut + ' // ' + $_.Exception.Message)
+            Write-Status ' ACCESS POLICY    //  LEGACY SHORTCUT CLEANUP WARNING' Yellow
+        }
     }
 }
 
@@ -588,6 +567,7 @@ try {
     }
     $manifest = Get-NormalizedManifest $rawManifest
     $installedVersion = Get-InstalledVersion
+    Remove-LegacyLaunchShortcuts
 
     Write-Status (" RELEASE CHANNEL  //  V" + $manifest.Version) White
     if (-not [string]::IsNullOrWhiteSpace($installedVersion)) { Write-Status (" LOCAL BUILD      //  V" + $installedVersion) DarkGray }
@@ -646,12 +626,8 @@ try {
     $InstallCommitted = $true
     Test-PackageIntegrity $InstallRoot
 
-    New-Item -ItemType Directory -Force -Path $StartMenuRoot | Out-Null
-    $desktopShortcutCreated = Try-NewBoosterShortcut $DesktopShortcut 'DESKTOP'
-    $startMenuShortcutCreated = Try-NewBoosterShortcut $StartMenuShortcut 'START MENU'
-    if (-not $desktopShortcutCreated -and -not $startMenuShortcutCreated) {
-        Write-Status ' SHORTCUT         //  OPTIONAL LINKS SKIPPED - INSTALL IS HEALTHY' Yellow
-    }
+    Remove-LegacyLaunchShortcuts
+    Write-Status ' ACCESS POLICY    //  POWERSHELL-ONLY LAUNCH' Cyan
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
