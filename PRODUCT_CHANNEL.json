@@ -1,10 +1,10 @@
 {
-  "version": "1.7.1",
-  "displayVersion": "Booster X V1.7.1",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.1/BOOSTER_X_V1.7.1_Portable.zip",
-  "sha256": "93bd56d4846ec2f1ad446ce55982c807dd2666f02ecc4bff61ad96b84f8fd482",
-  "size": 144481437,
+  "version": "1.7.2",
+  "displayVersion": "Booster X V1.7.2",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.2/BOOSTER_X_V1.7.2_Portable.zip",
+  "sha256": "4c2ae6e0bd2d17c576486c0a5a72eae20ef7eaaf68b261cdf9b0582c36f34686",
+  "size": 144511931,
   "requirePackageIntegrity": true,
-  "releaseNotes": "ปรับหน้า First-Run เป็น AI Cyber พร้อมโลโก้ BOOSTER X และไอคอน 3D; เพิ่ม Electric Blue plasma styling; แก้พื้นหลังซ้อน ขอบ Glow ตำแหน่งปุ่ม และการแสดงผลหน้าต่างขนาดเล็ก.",
+  "releaseNotes": "เพิ่ม Rule-Based Smart Cleaner, Adaptive Pre-Game Memory, Repair Mode และ Safe Launch; ขยาย Startup Manager ให้จัดการ Run/RunOnce, Startup Folder, Scheduled Tasks และบริการอัตโนมัติของโปรแกรมภายนอก พร้อม Backup, Restore และตรวจสอบผลหลังปรับค่า.",
   "mandatory": false
 }
