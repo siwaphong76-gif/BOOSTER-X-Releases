@@ -1,10 +1,10 @@
 {
-  "version": "1.7.2",
-  "displayVersion": "Booster X V1.7.2",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.2/BOOSTER_X_V1.7.2_Portable.zip",
-  "sha256": "4c2ae6e0bd2d17c576486c0a5a72eae20ef7eaaf68b261cdf9b0582c36f34686",
-  "size": 144511931,
+  "version": "1.7.4",
+  "displayVersion": "Booster X V1.7.4",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.4/BOOSTER_X_V1.7.4_Portable.zip",
+  "sha256": "ad461267a7aba09cb5d2413838d6bcd7d49b242e24cfe125efd68aa4af14bbc3",
+  "size": 144532120,
   "requirePackageIntegrity": true,
-  "releaseNotes": "เพิ่ม Rule-Based Smart Cleaner, Adaptive Pre-Game Memory, Repair Mode และ Safe Launch; ขยาย Startup Manager ให้จัดการ Run/RunOnce, Startup Folder, Scheduled Tasks และบริการอัตโนมัติของโปรแกรมภายนอก พร้อม Backup, Restore และตรวจสอบผลหลังปรับค่า.",
+  "releaseNotes": "Hybrid Core Routing: Competitive and Extreme route game and renderer processes to P-cores using both CPU Sets and Affinity. Safe Chrome, Discord, and background helpers route to E-cores, while system-critical applications remain Windows-managed. Includes P/E route verification and complete CPU Sets/Affinity restore.",
   "mandatory": false
 }
