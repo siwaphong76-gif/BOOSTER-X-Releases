@@ -4,7 +4,7 @@
     ตัวติดตั้ง BOOSTER X แบบคำสั่งเดียวผ่าน PowerShell
 .DESCRIPTION
     ดาวน์โหลด Release ตาม PRODUCT_CHANNEL.json ตรวจ SHA-256 ตรวจ PACKAGE_INTEGRITY.json
-    ติดตั้งแบบสลับโฟลเดอร์พร้อม Rollback สร้าง Shortcut และรายการถอนการติดตั้ง
+    ติดตั้งแบบสลับโฟลเดอร์พร้อม Rollback ลบ Shortcut รุ่นเก่า และสร้างรายการถอนการติดตั้ง
 .NOTES
     Script นี้ไม่ลบ Settings, Snapshots, Recovery หรือ Logs เดิมระหว่างอัปเดต
 #>
@@ -162,7 +162,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-'User-Agent' = 'BOOSTER-X-Installer/1.7.4'
+        'User-Agent' = 'BOOSTER-X-Installer/1.7.5'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -552,7 +552,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status ' CHANNEL          //  CHECKING LATEST RELEASE' Cyan
     try {
-$rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.4';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.5';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch {
         $manifestError = $_.Exception.Message
@@ -607,7 +607,7 @@ $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Head
     $packageRoot = Resolve-PackageRoot $ExtractRoot
     Test-PackageIntegrity $packageRoot
 
-    foreach ($required in @('BOOSTER X.exe','BOOSTER X Updater.exe','Launch-BOOSTER-X.ps1','RUN BOOSTER X.cmd','PACKAGE_INTEGRITY.json')) {
+    foreach ($required in @('BOOSTER X.exe','BOOSTER X Updater.exe','Launch-BOOSTER-X.ps1','PACKAGE_INTEGRITY.json')) {
         if (-not (Test-Path -LiteralPath (Join-Path $packageRoot $required))) { Fail 'BX-INS-052' ("แพ็กเกจขาดไฟล์สำคัญ: " + $required) }
     }
 
