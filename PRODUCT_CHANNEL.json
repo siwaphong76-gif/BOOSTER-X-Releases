@@ -1,10 +1,10 @@
 {
-  "version": "1.7.7",
-  "displayVersion": "Booster X V1.7.7",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.7/BOOSTER_X_V1.7.7_SecurePackage.zip",
-  "sha256": "36e654fde62cc6fbfc80545100f49754297a28e560a0c48e7658cd6e93aa54b0",
-  "size": 144542444,
+  "version": "1.7.8",
+  "displayVersion": "Booster X V1.7.8",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.8/BOOSTER_X_V1.7.8_SecurePackage.zip",
+  "sha256": "800c1844462f622ff7d169244088ecfbcf333bc3a211efd1e883b23141b11345",
+  "size": 144546492,
   "requirePackageIntegrity": true,
-  "releaseNotes": "AI Cyber Performance Console: ปรับผล Game Session ให้เป็น Performance Stream ที่เข้าธีม Deep Teal/Cyan, ลด Apply/Restore ให้ compact, เพิ่ม Hero Summary และป้องกันสีแดงซ้อนทับ โดยใช้สีสถานะเฉพาะ accent, icon และ badge.",
+  "releaseNotes": "Embedded BOOSTER X Power Plan Base: the verified BOOSTER_X_EXTREME.pow file is imported without changing the current active plan, then used as the Game Session base when no valid selected plan exists. Windows active-plan fallback remains available.",
   "mandatory": false
 }
