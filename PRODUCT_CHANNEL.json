@@ -1,10 +1,10 @@
 {
-  "version": "1.7.6",
-  "displayVersion": "Booster X V1.7.6",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.6/BOOSTER_X_V1.7.6_SecurePackage.zip",
-  "sha256": "3054596df91dbb925a444672ceef0386a484c469cc89e496aac873bf1169c1af",
-  "size": 144542112,
+  "version": "1.7.7",
+  "displayVersion": "Booster X V1.7.7",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.7/BOOSTER_X_V1.7.7_SecurePackage.zip",
+  "sha256": "36e654fde62cc6fbfc80545100f49754297a28e560a0c48e7658cd6e93aa54b0",
+  "size": 144542444,
   "requirePackageIntegrity": true,
-  "releaseNotes": "Verified Cyber Panel: ผล Game Session แสดง Requested และ Read-back ต่อรายการ พร้อมสถานะ Verified, Windows managed, รอเกม, Unsupported หรือ Needs attention; ปรับการ์ดผลลัพธ์ให้ชัดเจนโดยไม่เปลี่ยนโครงสร้างการใช้งานเดิม.",
+  "releaseNotes": "AI Cyber Performance Console: ปรับผล Game Session ให้เป็น Performance Stream ที่เข้าธีม Deep Teal/Cyan, ลด Apply/Restore ให้ compact, เพิ่ม Hero Summary และป้องกันสีแดงซ้อนทับ โดยใช้สีสถานะเฉพาะ accent, icon และ badge.",
   "mandatory": false
 }
