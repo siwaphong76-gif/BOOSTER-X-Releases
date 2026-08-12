@@ -1,10 +1,10 @@
 {
-  "version": "1.7.5",
-  "displayVersion": "Booster X V1.7.5",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.5/BOOSTER_X_V1.7.5_SecurePackage.zip",
-  "sha256": "f18a81a82717f3f39806aebfecea6d67312374b29dc09735ae7984f66990e8f2",
-  "size": 144540843,
+  "version": "1.7.6",
+  "displayVersion": "Booster X V1.7.6",
+  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.7.6/BOOSTER_X_V1.7.6_SecurePackage.zip",
+  "sha256": "3054596df91dbb925a444672ceef0386a484c469cc89e496aac873bf1169c1af",
+  "size": 144542112,
   "requirePackageIntegrity": true,
-  "releaseNotes": "Phase 1 Reliability: verified P/E Core routing, accurate pending Restore state, Capability Gate, Session Transaction Guard, Support Diagnostic Log, and PowerShell-only install/update/repair/launch without customer shortcuts or CMD launcher.",
+  "releaseNotes": "Verified Cyber Panel: ผล Game Session แสดง Requested และ Read-back ต่อรายการ พร้อมสถานะ Verified, Windows managed, รอเกม, Unsupported หรือ Needs attention; ปรับการ์ดผลลัพธ์ให้ชัดเจนโดยไม่เปลี่ยนโครงสร้างการใช้งานเดิม.",
   "mandatory": false
 }
