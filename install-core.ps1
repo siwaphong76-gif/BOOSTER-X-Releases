@@ -31,6 +31,10 @@ $DesktopShortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) 'BOOSTER 
 $StartMenuShortcut = Join-Path $StartMenuRoot 'BOOSTER X.lnk'
 $UninstallScript = Join-Path $DataRoot 'Uninstall-BOOSTER-X.ps1'
 $UninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\BOOSTER X'
+$BoosterPowerPlanFile = Join-Path $InstallRoot 'powerplans\BOOSTER_X_EXTREME.pow'
+$BoosterPowerPlanHash = '8d0d9df74335bc38044c9e5067dc67001a07763cf46ba3732807c24fff17c918'
+$BoosterPowerPlanName = 'BOOSTER X Performance Base'
+$BoosterPowerPlanState = Join-Path $DataRoot 'booster-power-plan.json'
 $InstallId = [Guid]::NewGuid().ToString('N')
 $WorkRoot = Join-Path (Join-Path $env:LOCALAPPDATA 'Programs') ('.BOOSTERX-install-' + $InstallId)
 $DownloadPartial = Join-Path $WorkRoot 'BOOSTER_X.zip.partial'
@@ -162,7 +166,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.7.7'
+        'User-Agent' = 'BOOSTER-X-Installer/1.7.8'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -418,6 +422,56 @@ if (-not $Silent) {
     [IO.File]::WriteAllText($UninstallScript, $content, (New-Object Text.UTF8Encoding($true)))
 }
 
+function Get-PowerPlanGuidFromOutput {
+    param([string]$Text)
+    $match = [regex]::Match($Text, '(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b')
+    if ($match.Success) { return $match.Value.ToLowerInvariant() }
+    return ''
+}
+
+function Install-BoosterPowerPlan {
+    if (-not (Test-Path -LiteralPath $BoosterPowerPlanFile -PathType Leaf)) { throw 'BOOSTER X Power Plan asset is missing from the verified package.' }
+    $assetHash = (Get-FileHash -LiteralPath $BoosterPowerPlanFile -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($assetHash -ne $BoosterPowerPlanHash) { throw 'BOOSTER X Power Plan asset hash verification failed.' }
+
+    $guid = ''
+    $importedThisRun = $false
+    try {
+        $existing = (& powercfg /list 2>&1 | Out-String)
+        $already = [regex]::Match($existing, '(?im)^.*?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}).*\(BOOSTER X Performance Base\)')
+        if ($already.Success) {
+            $guid = $already.Groups[1].Value.ToLowerInvariant()
+            Write-Diagnostic ('BOOSTER X Power Plan already present: ' + $guid)
+        }
+        else {
+            $result = (& powercfg /import $BoosterPowerPlanFile 2>&1 | Out-String)
+            $guid = Get-PowerPlanGuidFromOutput $result
+            if ([string]::IsNullOrWhiteSpace($guid)) {
+                $afterImport = (& powercfg /list 2>&1 | Out-String)
+                $match = [regex]::Match($afterImport, '(?im)^.*?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}).*\(BOOSTER X')
+                if ($match.Success) { $guid = $match.Groups[1].Value.ToLowerInvariant() }
+            }
+            if ([string]::IsNullOrWhiteSpace($guid)) { throw ('Power Plan import failed: ' + $result.Trim()) }
+            $importedThisRun = $true
+            $rename = (& powercfg /changename $guid $BoosterPowerPlanName 2>&1 | Out-String)
+            if ($LASTEXITCODE -ne 0) { throw ('Power Plan rename failed: ' + $rename.Trim()) }
+            Write-Diagnostic ('Imported BOOSTER X Power Plan: ' + $guid)
+        }
+
+        $state = [ordered]@{ format = 'BOOSTER-X-POWER-PLAN-1'; guid = $guid; name = $BoosterPowerPlanName; assetSha256 = $assetHash; importedAtUtc = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json
+        [IO.File]::WriteAllText($BoosterPowerPlanState, $state, (New-Object Text.UTF8Encoding($false)))
+        Write-Status ' POWER PLAN       //  BOOSTER X BASE READY' Cyan
+        Write-Diagnostic ('BOOSTER X Power Plan base ready: ' + $guid)
+    }
+    catch {
+        if ($importedThisRun -and -not [string]::IsNullOrWhiteSpace($guid)) {
+            & powercfg /delete $guid 2>$null | Out-Null
+        }
+        Write-Status ' POWER PLAN       //  BASE IMPORT SKIPPED - WINDOWS FALLBACK' Yellow
+        Write-Diagnostic ('BOOSTER X Power Plan import skipped: ' + $_.Exception.Message)
+    }
+}
+
 function Register-Uninstall {
     param([string]$Version)
     New-Item -Path $UninstallKey -Force | Out-Null
@@ -438,7 +492,7 @@ function Get-InstalledVersion {
 }
 
 function Test-InstalledPackageHealthy {
-    foreach ($required in @('BOOSTER X.exe','BOOSTER X Updater.exe','Launch-BOOSTER-X.ps1','PACKAGE_INTEGRITY.json')) {
+    foreach ($required in @('BOOSTER X.exe','BOOSTER X Updater.exe','Launch-BOOSTER-X.ps1','PACKAGE_INTEGRITY.json','powerplans\BOOSTER_X_EXTREME.pow')) {
         if (-not (Test-Path -LiteralPath (Join-Path $InstallRoot $required))) {
             Write-Status (" REPAIR           //  MISSING " + $required) Yellow
             return $false
@@ -552,7 +606,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status ' CHANNEL          //  CHECKING LATEST RELEASE' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.7';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.8';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch {
         $manifestError = $_.Exception.Message
@@ -628,6 +682,7 @@ try {
 
     Remove-LegacyLaunchShortcuts
     Write-Status ' ACCESS POLICY    //  POWERSHELL-ONLY LAUNCH' Cyan
+    Install-BoosterPowerPlan
     Write-UninstallScript
     Register-Uninstall $manifest.Version
 
