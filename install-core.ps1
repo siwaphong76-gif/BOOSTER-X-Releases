@@ -166,7 +166,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.7.8'
+        'User-Agent' = 'BOOSTER-X-Installer/1.7.9'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -606,7 +606,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status ' CHANNEL          //  CHECKING LATEST RELEASE' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.8';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.7.9';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch {
         $manifestError = $_.Exception.Message
