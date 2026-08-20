@@ -14,7 +14,7 @@ try {
     Remove-Item -LiteralPath $bxTempPath -Force -ErrorAction SilentlyContinue
 
     $bxHeaders = @{
-        'User-Agent' = 'BOOSTER-X-Bootstrap/1.7.8'
+        'User-Agent' = 'BOOSTER-X-Bootstrap/1.7.9'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
