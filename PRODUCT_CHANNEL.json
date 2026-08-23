@@ -1,10 +1,10 @@
 {
-  "version": "1.8.0",
-  "displayVersion": "Booster X V1.8.0",
-  "downloadUrl": "https://github.com/siwaphong76-gif/BOOSTER-X-Releases/releases/download/v1.8.0/BOOSTER_X_V1.8.0_SecurePackage.zip",
-  "sha256": "4b888fda657c39946022b7fa840d9c16d30de448ec05eafdf978b1599f3d818a",
-  "size": 144559429,
+  "version": "1.8.1",
+  "displayVersion": "Booster X V1.8.1",
+  "downloadUrl": "https://github.com/BoosterXOfficial/BOOSTER-X-Releases/releases/download/v1.8.1/BOOSTER_X_V1.8.1_SecurePackage.zip",
+  "sha256": "cab804af8d641d80a3b6e9c779cd1527040441318f69b8df433321cac983be7e",
+  "size": 144930798,
   "requirePackageIntegrity": true,
-  "releaseNotes": "Network Competitive Control: capability-gated RSS and safe P-core routing, RSC low-latency policy, NIC power lock, and supported NIC gaming switches. Every changed adapter setting is backed up, read back for verification, and can be restored.",
+  "releaseNotes": "Brand channel migration: all installer, self-repair, support and in-app update endpoints now use BoosterXOfficial. Existing features and release behavior are unchanged.",
   "mandatory": false
 }

@@ -11,7 +11,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$ManifestUrl = 'https://raw.githubusercontent.com/siwaphong76-gif/BOOSTER-X-Releases/main/PRODUCT_CHANNEL.json',
+    [string]$ManifestUrl = 'https://raw.githubusercontent.com/BoosterXOfficial/BOOSTER-X-Releases/main/PRODUCT_CHANNEL.json',
     [switch]$Silent,
     [switch]$NoLaunch,
     [switch]$Force
@@ -166,7 +166,7 @@ function Get-NormalizedManifest {
 function Invoke-DownloadFile {
     param([string]$Url, [string]$Destination)
     $headers = @{
-        'User-Agent' = 'BOOSTER-X-Installer/1.8.0'
+        'User-Agent' = 'BOOSTER-X-Installer/1.8.1'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
@@ -606,7 +606,7 @@ try {
     $manifestRequestUrl = $ManifestUrl + $(if ($ManifestUrl.Contains('?')) { '&' } else { '?' }) + 't=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     Write-Status ' CHANNEL          //  CHECKING LATEST RELEASE' Cyan
     try {
-        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.8.0';'Cache-Control'='no-cache'} -TimeoutSec 30
+        $rawManifest = Invoke-RestMethod -Uri $manifestRequestUrl -UseBasicParsing -Headers @{'User-Agent'='BOOSTER-X-Installer/1.8.1';'Cache-Control'='no-cache'} -TimeoutSec 30
     }
     catch {
         $manifestError = $_.Exception.Message

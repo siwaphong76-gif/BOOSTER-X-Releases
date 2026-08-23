@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$bxUrl = 'https://raw.githubusercontent.com/siwaphong76-gif/BOOSTER-X-Releases/main/install-core.ps1'
+$bxUrl = 'https://raw.githubusercontent.com/BoosterXOfficial/BOOSTER-X-Releases/main/install-core.ps1'
 $bxBootstrapRoot = Join-Path $env:LOCALAPPDATA 'BOOSTER X\Bootstrap'
 $bxScriptPath = Join-Path $bxBootstrapRoot 'install-core.ps1'
 $bxTempPath = $bxScriptPath + '.download'
@@ -14,7 +14,7 @@ try {
     Remove-Item -LiteralPath $bxTempPath -Force -ErrorAction SilentlyContinue
 
     $bxHeaders = @{
-        'User-Agent' = 'BOOSTER-X-Bootstrap/1.8.0'
+        'User-Agent' = 'BOOSTER-X-Bootstrap/1.8.1'
         'Cache-Control' = 'no-cache'
         'Pragma' = 'no-cache'
     }
